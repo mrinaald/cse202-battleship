@@ -64,24 +64,77 @@ class BruteForceAgent(BaseAgent):
 
         return -1, "Unknown Error: Should not have happened"
 
-
 class OptimalAgent(BaseAgent):
     """Our Optimal Algorithmic Agent"""
-    # # Specific constructor required if more paramters are required to initialize agent
-    # def __init__(self):
-    #     pass
+    
+    def __init__(self, agent_board: BattleshipAgentBoard):
+        super().__init__(agent_board)
+        self.total_ships = sum([ship.count for ship in self.board_config.ships])
+        self.ships_sunk = 0
+        self.moves = 0
+        self.step_size = min(ship.length * ship.width for ship in self.board_config.ships)
 
-    def seek(self):
-        # for r in range(self.board_config.n, step_size):
-        #     for c in range(self.board_config.n, step_size):
-        pass
+    def seek(self) -> bool:
+        """Seeks ships using a checkerboard-style search based on the smallest ship size."""
+        large_side = max(self.step_size, self.step_size)
+        small_side = min(self.step_size, self.step_size)
 
-    def sink(self):
-        pass
+        for r in range(0, self.board_config.n, large_side):
+            for c in range(0, self.board_config.n, large_side):
+                for x in range(0, large_side, small_side):
+                    ar, ac = r + x, c + x
+                    if 0 <= ar < self.board_config.n and 0 <= ac < self.board_config.n and self.board[ar, ac] == 0:
+                        result = self.agent_board.attack(ar, ac)
+                        self.moves += 1
+                        self.board[ar, ac] = 1  # Mark as visited
+                        
+                        if result == AttackResult.HIT:
+                            self.sink(ar, ac)
+                        
+                        if self.ships_sunk == self.total_ships:
+                            return True
+        return False
+
+    def sink(self, ar: int, ac: int):
+        """Performs a BFS search to completely sink a ship after a hit is found."""
+        queue = deque([(ar, ac)])
+        while queue:
+            i, j = queue.popleft()
+            for ni, nj in [(i+1, j), (i-1, j), (i, j+1), (i, j-1)]:
+                if 0 <= ni < self.board_config.n and 0 <= nj < self.board_config.n and self.board[ni, nj] == 0:
+                    result = self.agent_board.attack(ni, nj)
+                    self.moves += 1
+                    self.board[ni, nj] = 1  # Mark as visited
+                    
+                    if result == AttackResult.HIT:
+                        queue.append((ni, nj))
+                    elif result == AttackResult.SUNK:
+                        self.ships_sunk += 1
 
     def start_game(self) -> Tuple[int, str]:
-        # TODO: Complete this
-        pass
+        """Runs the optimal battleship algorithm."""
+        if self.seek():
+            return self.moves, ""
+        return -1, "Unknown Error: Should not have happened"
+
+
+# class OptimalAgent(BaseAgent):
+#     """Our Optimal Algorithmic Agent"""
+#     # # Specific constructor required if more paramters are required to initialize agent
+#     # def __init__(self):
+#     #     pass
+
+#     def seek(self):
+#         # for r in range(self.board_config.n, step_size):
+#         #     for c in range(self.board_config.n, step_size):
+#         pass
+
+#     def sink(self):
+#         pass
+
+#     def start_game(self) -> Tuple[int, str]:
+#         # TODO: Complete this
+#         pass
 
 
 class RandomAgent(BaseAgent):
