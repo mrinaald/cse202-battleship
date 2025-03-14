@@ -21,6 +21,9 @@ def run_game(board_config: BoardConfig):
 
     agent = BruteForceAgent(agent_board=agent_board)
     moves, err = agent.start_game()
+    print(f"Num moves taken by agent: {moves}")
+    if err:
+        print(f"Agent Error: {err}")
 
 
 def main(args: argparse.Namespace):
@@ -45,6 +48,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--board_file", type=str, default="",
                         help="Input board filepath")
+    
+    # Below parameters are not implemented yet
     parser.add_argument("-c", "--config_file", type=str, default="",
                         help="Generate a random board from an input CONFIG .json file")
     parser.add_argument("-s", "--seed", type=int, default=0,

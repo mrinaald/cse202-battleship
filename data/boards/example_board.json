@@ -1,0 +1,17 @@
+{
+    "n": 10,
+    "ships": [
+        {
+            "length": 2,
+            "breadth": 2,
+            "count": 2,
+            "positions": [[0, 0], [5, 5]]
+        },
+        {
+            "length": 1,
+            "breadth": 2,
+            "count": 2,
+            "positions": [[2,2], [9,1]]
+        }
+    ]
+}

@@ -15,7 +15,6 @@ class BaseAgent(ABC):
     agent_board: BattleshipAgentBoard
     board: np.array
 
-    @abstractmethod
     def __init__(self, agent_board: BattleshipAgentBoard):
         self.agent_board = agent_board
         self.board_config = self.agent_board.board_config
@@ -61,11 +60,9 @@ class BruteForceAgent(BaseAgent):
                     ships_sunk += 1
 
                 if ships_sunk == total_ships:
-                    break
+                    return moves, ""
 
-            if ships_sunk == total_ships:
-                break
-        return moves, ""
+        return -1, "Unknown Error: Should not have happened"
 
 
 class OptimalAgent(BaseAgent):
@@ -74,8 +71,16 @@ class OptimalAgent(BaseAgent):
     # def __init__(self):
     #     pass
 
+    def seek(self):
+        # for r in range(self.board_config.n, step_size):
+        #     for c in range(self.board_config.n, step_size):
+        pass
+
+    def sink(self):
+        pass
+
     def start_game(self) -> Tuple[int, str]:
-        # TODO:
+        # TODO: Complete this
         pass
 
 
@@ -86,6 +91,12 @@ class RandomAgent(BaseAgent):
     def __init__(self, agent_view: BattleshipAgentBoard, seed: int = 0):
         super().__init__(agent_view)
         self.seed = seed
+    
+    def seek(self):
+        pass
+
+    def sink(self):
+        pass
 
     def start_game(self) -> Tuple[int, str]:
         # TODO:
