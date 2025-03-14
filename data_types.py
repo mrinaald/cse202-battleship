@@ -30,16 +30,18 @@ class Ship():
     length: int
     breadth: int
     count: int
-    rows: List[int]
-    cols: List[int]
+    positions: List[List[int]]
+
+    @classmethod
+    def from_dict(cls, ship: Dict[str, Any]) -> "Ship":
+        return cls(ship["length"], ship["breadth"], ship["count"], ship["positions"])
 
     def to_dict(self) -> Dict[str, int]:
         return {
             "length": self.length,
             "breadth": self.breadth,
             "count": self.count,
-            "rows": self.rows,
-            "cols": self.cols,
+            "positions": self.positions,
         }
 
     def get_ship_view(self) -> ShipView:
@@ -65,7 +67,7 @@ class BoardConfig():
         ships: List[Ship] = [None] * len(config["ships"])
 
         for i, ship in enumerate(config["ships"]):
-            ships[i] = Ship(ship.length, ship.breadth, ship.count, ship.rows, ship.cols)
+            ships[i] = Ship.from_dict(ship)
 
         return cls(n, ships)
 
@@ -93,3 +95,11 @@ class AttackResult(Enum):
 class ExperimentConfig():
     boards: List[BoardConfig]
     runs_per_board: int
+
+
+if __name__ == "__main__":
+    with open("example_board.json", "r") as f:
+        config = json.load(f)
+    
+    print(config)
+    BoardConfig.from_json("example_board.json")

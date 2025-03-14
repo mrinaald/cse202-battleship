@@ -14,17 +14,20 @@ class BattleshipBoard():
     board_config: BoardConfig
     board: np.array
 
-    CELL_HIT = -1
-    CELL_EMPTY = 0
-    CELL_SHIP = 1
+    CELL_HIT = -2
+    CELL_EMPTY = -1
 
     def __init__(self, board_config: BoardConfig):
         self.board_config = board_config
 
-        self.board = np.zeros(shape=(self.board_config.n, self.board_config.n))
+        self.board = np.zeros(shape=(self.board_config.n, self.board_config.n)) - 1
+        
         # TODO: Place ships on the board. Use CELL_SHIP to indicate ship
         for ship in self.board_config.ships:
             pass
+        
+        # TODO: Put assertiions to ensure our input constraints
+        # make sure "Count" and number of positions in the list match
 
     def attack(self, r, c) -> AttackResult:
         """API to hit particular cell on board"""
@@ -37,11 +40,12 @@ class BattleshipBoard():
             # cell already hit, return HIT
             return AttackResult.HIT
 
-        elif self.board[r, c] == self.CELL_SHIP:
+        elif self.board[r, c] > 0:
             # We hit a ship. Return HIT or SUNK accordingly
             # TODO: Implement logic to return HIT or SUNK
+            ship_id = self.board[r, c]
             self.board[r, c] = self.CELL_HIT
-            return AttackResult.HIT
+            return AttackResult.HIT # Or AttackResult.SUNK
 
         # Should not reach here
         return AttackResult.INVALID
