@@ -98,8 +98,8 @@ class ExperimentConfig():
 
 
 if __name__ == "__main__":
-    with open("example_board.json", "r") as f:
+    with open("./data/boards/example_board.json", "r") as f:
         config = json.load(f)
     
-    print(config)
-    BoardConfig.from_json("example_board.json")
+    print(json.dumps(config, indent=2))
+    BoardConfig.from_json("./data/boards/example_board.json")
