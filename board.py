@@ -16,37 +16,46 @@ class BattleshipBoard:
     board: np.array
 
     CELL_HIT = -2
-    CELL_EMPTY = -1
+    CELL_EMPTY = 0
 
     def __init__(self, board_config: BoardConfig):
         self.board_config = board_config
 
-        self.board = np.zeros(shape=(self.board_config.n, self.board_config.n)) - 1
+        self.board = np.zeros(shape=(self.board_config.n, self.board_config.n))
 
         id = 0
         board_size = self.board_config.n * self.board_config.n
+        total_ship_area = 0
+
+        # make sure "Count" and number of positions in the list match
+        # make sure area of board is larger than sum of areas of ships
+        for ship in self.board_config.ships:
+            if ship.count != len(ship.positions):
+                raise ValueError("Ship count does not match with number of ships")
+            total_ship_area += ship.length * ship.breadth * ship.count
+
+        if total_ship_area > board_size:
+            raise ValueError("Ships do not all fit on board")
+
         # TODO: Place ships on the board. Use CELL_SHIP to indicate ship
         for ship in self.board_config.ships:
             id += 1
-            l = ship.length
-            b = ship.breadth
-            ship_size = l * b
             for position in ship.positions:
-                board_size -= ship_size
-                if board_size < 0:
-                    raise ValueError("Ship (id: {id}) does not fit in board")
                 x, y = position
                 # Place the ship on the board
-                for i in range(l):
-                    for j in range(b):
+                for i in range(ship.length):
+                    for j in range(ship.breadth):
                         if x + i < self.board_config.n and y + j < self.board_config.n:
+                            if self.board[x + i, y + j] != 0:
+                                raise ValueError(
+                                    "Ship (id: {id}) overlaps with Ship (id: {self.board[x + i, y + j]})"
+                                )
                             self.board[x + i, y + j] = id
                         else:
                             raise ValueError("Ship (id: {id}) is out of bounds")
 
         print(self.board)
         # TODO: Put assertiions to ensure our input constraints
-        # make sure "Count" and number of positions in the list match
 
     def attack(self, r, c) -> AttackResult:
         """API to hit particular cell on board"""
