@@ -6,7 +6,7 @@ CSE202 Course Project where we try to algorithmically solve the classic game of 
 
 - Total area of ships should not exceed N\*N
 - Ships' postions should not exceed the board boundary.
-- **There exists at least one ship type that has the smallest length and breadth across all ship types.**
+- There exists at least one ship type that has the smallest length and breadth across all ship types.
 - No ship should overlap
 - Count and number of positions for each ship type should be the same.
 
