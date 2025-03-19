@@ -32,34 +32,39 @@ class BattleshipBoard:
         min_l_id = []
         min_b_id = []
 
-        # make sure number of ships and number of positions in the list match
-        for ship in self.board_config.ships:
+        for ship_index, ship in enumerate(self.board_config.ships):
+            # make sure number of ships and number of positions in the list match
             if ship.count != len(ship.positions):
                 raise ValueError("Ship count does not match with number of ships")
+            
             total_ship_area += ship.length * ship.breadth * ship.count
-            if ship.length < min_l:
-                min_l = ship.length
-                if len(min_l_id) == 0:
-                    min_l_id.append(self.board_config.ships.index(ship))
-                else:
-                    min_l_id[0] = self.board_config.ships.index(ship)
-            elif ship.length == min_l:
-                min_l_id.append(self.board_config.ships.index(ship))
-            if ship.breadth < min_b:
-                min_b = ship.breadth
-                if len(min_b_id) == 0:
-                    min_b_id.append(self.board_config.ships.index(ship))
-                else:
-                    min_b_id[0] = self.board_config.ships.index(ship)
-            elif ship.breadth == min_b:
-                min_b_id.append(self.board_config.ships.index(ship))
+
+            l = min(ship.length, ship.breadth)
+            b = max(ship.length, ship.breadth)
+            
+            if l < min_l:
+                min_l = l
+                min_l_id = [ship_index]
+            elif l == min_l:
+                min_l_id.append(ship_index)
+
+            if b < min_b:
+                min_b = b
+                min_b_id = [ship_index]
+            elif b == min_b:
+                min_b_id.append(ship_index)
 
         # make sure there exists a ship type with both smallest length and smallest breath
+        is_valid = False
         for l in min_l_id:
-            if l not in min_b_id:
-                raise ValueError(
-                    "No ship type with both smallest length and smallest breath"
-                )
+            if l in min_b_id:
+                is_valid = True
+                break
+        
+        if not is_valid:
+            raise ValueError(
+                "No ship type with both smallest length and smallest breath"
+            )
 
         # make sure area of board is larger than sum of areas of ships
         if total_ship_area > board_size:
@@ -82,7 +87,7 @@ class BattleshipBoard:
                                 )
                             self.board[x + i, y + j] = id
                         else:  # make sure ships are all withing bounds of board
-                            raise ValueError("Ship (id: {id}) is out of bounds")
+                            raise ValueError(f"Ship (id: {id}, pos: {position}) is out of bounds")
 
         print(self.board)
         print(self.SHIP_CELLS)
