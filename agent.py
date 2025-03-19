@@ -120,86 +120,51 @@ class OptimalAgent(BaseAgent):
         return -1, "Unknown Error: Should not have happened"
 
 
-# class OptimalAgent(BaseAgent):
-#     """Our Optimal Algorithmic Agent"""
-#     # # Specific constructor required if more paramters are required to initialize agent
-#     # def __init__(self):
-#     #     pass
+class RandomAgent(BaseAgent):
+    """Randomized Agent"""
+    seed: int
 
-#     def seek(self):
-#         # for r in range(self.board_config.n, step_size):
-#         #     for c in range(self.board_config.n, step_size):
-#         pass
+    def __init__(self, agent_board: BattleshipAgentBoard, seed: int = 0):
+        super().__init__(agent_board)
+        self.seed = seed
+        random.seed(self.seed)
+        self.available_cells = [(r, c) for r in range(self.board_config.n) for c in range(self.board_config.n)]
+        random.shuffle(self.available_cells)  # Shuffle to introduce randomness
+        self.moves = 0
+        self.ships_sunk = 0
+        self.total_ships = sum([ship.count for ship in self.board_config.ships])
 
-#     def sink(self):
-#         pass
-
-#     def start_game(self) -> Tuple[int, str]:
-#         # TODO: Complete this
-#         pass
-
-
-# class RandomAgent(BaseAgent):
-#     """Randomized Agent"""
-#     seed: int
-
-#     def __init__(self, agent_view: BattleshipAgentBoard, seed: int = 0):
-#         super().__init__(agent_view)
-#         self.seed = seed
-    
-#     def seek(self):
-#         pass
-
-#     def sink(self):
-#         pass
-
-#     def start_game(self) -> Tuple[int, str]:
-#         # TODO:
-#         pass
-
-
-
-def __init__(self, agent_board: BattleshipAgentBoard, seed: int = 0):
-    super().__init__(agent_board)
-    self.seed = seed
-    random.seed(self.seed)
-    self.available_cells = [(r, c) for r in range(self.board_config.n) for c in range(self.board_config.n)]
-    random.shuffle(self.available_cells)  # Shuffle to introduce randomness
-    self.moves = 0
-    self.ships_sunk = 0
-    self.total_ships = sum([ship.count for ship in self.board_config.ships])
-
-def seek(self):
-    """Selects random positions to attack until all ships are found and sunk."""
-    while self.available_cells and self.ships_sunk < self.total_ships:
-        r, c = self.available_cells.pop()
-        if self.board[r, c] == 0:  # If cell is unvisited
-            result = self.agent_board.attack(r, c)
-            self.board[r, c] = 1  # Mark as visited
-            self.moves += 1
-
-            if result == AttackResult.HIT:
-                self.sink(r, c)
-            elif result == AttackResult.SUNK:
-                self.ships_sunk += 1
-
-def sink(self, ar: int, ac: int):
-    """Performs a BFS search to completely sink a ship after a hit is found."""
-    queue = deque([(ar, ac)])
-    while queue:
-        i, j = queue.popleft()
-        for ni, nj in [(i+1, j), (i-1, j), (i, j+1), (i, j-1)]:
-            if 0 <= ni < self.board_config.n and 0 <= nj < self.board_config.n and self.board[ni, nj] == 0:
-                result = self.agent_board.attack(ni, nj)
-                self.board[ni, nj] = 1  # Mark as visited
+    def seek(self):
+        """Selects random positions to attack until all ships are found and sunk."""
+        while self.available_cells and self.ships_sunk < self.total_ships:
+            r, c = self.available_cells.pop()
+            if self.board[r, c] == 0:  # If cell is unvisited
+                result = self.agent_board.attack(r, c)
+                self.board[r, c] = 1  # Mark as visited
                 self.moves += 1
-                
+
                 if result == AttackResult.HIT:
-                    queue.append((ni, nj))
+                    self.sink(r, c)
                 elif result == AttackResult.SUNK:
                     self.ships_sunk += 1
 
-def start_game(self) -> Tuple[int, str]:
-    """Runs the randomized battleship algorithm."""
-    self.seek()
-    return self.moves, ""
+    def sink(self, ar: int, ac: int):
+        """Performs a BFS search to completely sink a ship after a hit is found."""
+        queue = deque([(ar, ac)])
+        while queue:
+            i, j = queue.popleft()
+            for ni, nj in [(i+1, j), (i-1, j), (i, j+1), (i, j-1)]:
+                if 0 <= ni < self.board_config.n and 0 <= nj < self.board_config.n and self.board[ni, nj] == 0:
+                    result = self.agent_board.attack(ni, nj)
+                    self.board[ni, nj] = 1  # Mark as visited
+                    self.moves += 1
+                    
+                    if result == AttackResult.HIT:
+                        queue.append((ni, nj))
+                    elif result == AttackResult.SUNK:
+                        self.ships_sunk += 1
+
+    def start_game(self) -> Tuple[int, str]:
+        """Runs the randomized battleship algorithm."""
+        self.seek()
+        return self.moves, ""

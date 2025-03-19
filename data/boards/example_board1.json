@@ -2,8 +2,8 @@
     "n": 10,
     "ships": [
         {
-            "length": 3,
-            "breadth": 1,
+            "length": 1,
+            "breadth": 3,
             "count": 1,
             "positions": [[0, 0]]
         },
@@ -14,14 +14,14 @@
             "positions": [[3, 2], [6, 6]]
         },
         {
-            "length": 4,
-            "breadth": 1,
+            "length": 1,
+            "breadth": 4,
             "count": 1,
             "positions": [[8, 1]]
         },
         {
-            "length": 1,
-            "breadth": 2,
+            "length": 2,
+            "breadth": 1,
             "count": 1,
             "positions": [[1, 7]]
         }

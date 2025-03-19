@@ -2,14 +2,14 @@
     "n": 20,
     "ships": [
         {
-            "length": 2,
-            "breadth": 4,
+            "length": 4,
+            "breadth": 2,
             "count": 1,
             "positions": [[0, 0]]
         },
         {
-            "length": 2,
-            "breadth": 3,
+            "length": 3,
+            "breadth": 2,
             "count": 1,
             "positions": [[5, 5]]
         },
@@ -20,8 +20,8 @@
             "positions": [[10, 10], [7, 15]]
         },
         {
-            "length": 5,
-            "breadth": 1,
+            "length": 2,
+            "breadth": 5,
             "count": 1,
             "positions": [[18, 12]]
         }
@@ -46,6 +46,6 @@
         "16 . . . . . . . . . . . . . . . . . . . .",
         "17 . . . . . . . . . . . . . . . . . . . .",
         "18 . . . . . . . . . . . . S S S S S . . .",
-        "19 . . . . . . . . . . . . . . . . . . . ."
+        "19 . . . . . . . . . . . . S S S S S . . ."
       ]
 }
