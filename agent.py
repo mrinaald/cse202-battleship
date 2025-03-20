@@ -87,7 +87,7 @@ class OptimalAgent(BaseAgent):
 
         self.small_side = min_small_side
         self.large_side = min_large_side
-        print(f"Min sized ship: {self.large_side}x{self.small_side}")
+        # print(f"Min sized ship: {self.large_side}x{self.small_side}")
 
     def seek(self) -> bool:
         """Seeks ships using a checkerboard-style search based on the smallest ship size."""
@@ -106,7 +106,7 @@ class OptimalAgent(BaseAgent):
                         if self.ships_sunk == self.total_ships:
                             return True
 
-        print(f"Could not sink all ships: sunk={self.ships_sunk}, total={self.total_ships}")
+        # print(f"Could not sink all ships: sunk={self.ships_sunk}, total={self.total_ships}")
         return False
 
     def sink(self, ar: int, ac: int):

@@ -93,8 +93,8 @@ class BattleshipBoard:
                         else:  # make sure ships are all withing bounds of board
                             raise ValueError(f"Ship (id: {id}, pos: {position}) is out of bounds")
 
-        print(self.board)
-        print(self.SHIP_CELLS)
+        # print(self.board)
+        # print(self.SHIP_CELLS)
 
     def attack(self, r, c) -> AttackResult:
         """API to hit particular cell on board"""

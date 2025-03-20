@@ -9,6 +9,7 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from agent import BaseAgent, BruteForceAgent, OptimalAgent, RandomAgent
 from board import BattleshipBoard, BattleshipAgentBoard
@@ -24,16 +25,25 @@ def run_experiments(config_file: str, agent: str, output_dir: str, seed: int, ru
     with open(config_file, "r") as f:
         experiment_config = json.load(f)
 
+    basename = os.path.basename(config_file)
+    result_file = os.path.join(output_dir, f"{agent}_{basename.split('_')[-1]}")
 
-    for n, configs in experiment_config.items():
-        for config, boards in configs.items():
+    # Planning to save as json
+    # results = {n: {config: {moves: [], error: [(index, message)]}}}
+    results = {}
+
+    for n, configs in tqdm(experiment_config.items(), total=len(experiment_config), desc="N"):
+        results[n] = {}
+        for config, boards in tqdm(configs.items(), total=len(configs), desc="Configs", leave=False):
             perc = float(config.split("-")[0][1:])
             min_ship_size = config.split("-")[1][1:]
             min_ship_size = tuple([int(s) for s in min_ship_size.split("x")])
 
             # print(f"n={n} | p={perc} | s={min_ship_size} | num_boards={len(boards)}")
+            game_moves = []
+            errors = []
 
-            for board_config_dict in boards:
+            for i, board_config_dict in tqdm(enumerate(boards), total=len(boards), desc="Board", leave=False):
                 board_config = BoardConfig.from_dict(board_config_dict)
 
                 # We need at least N (board size) vs Moves plot for all 3 agents
@@ -47,11 +57,20 @@ def run_experiments(config_file: str, agent: str, output_dir: str, seed: int, ru
                 # In other words, a total of 6 combinations for each N.
                 # For each combination, we have 10 different boards, so we can take avg., std., median, etc.
 
-                # TODO: Uncomment below line, collect data (moves) and save in some .csv/.json
-                #       for plotting purposes. We can track moves of all 10 boards for each configuration
-                #       so that we can compute the statistics (mean, median, etc.) without re-running
-                #       the experiments.
-                # moves, err = run_game(board_config, agent, seed)
+                moves, err = run_game(board_config, agent, seed)
+                if moves > 0 and len(err) == 0:
+                    game_moves.append(moves)
+                else:
+                    errors.append((i, err))
+
+            results[n][config] = {
+                "moves": game_moves,
+                "errors": errors,
+            }
+
+    os.makedirs(output_dir, exist_ok=True)
+    with open(result_file, "w") as f:
+        json.dump(results, f, indent=2)
 
 
 def run_game(board_config: BoardConfig, agent: str, seed: int = 0) -> Tuple[int, str]:
@@ -111,7 +130,7 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--experiment_file", type=str, default="",
                         help="Run experiments using an input CONFIG .json file."
                         "If provided, all other parameters are ignored.")
-    parser.add_argument("-o", "--output_dir", type=str, default="./data/experiments",
+    parser.add_argument("-o", "--output_dir", type=str, default="./data/outputs",
                         help="Output directory")
     parser.add_argument("-r", "--runs", type=int, default=10,
                         help="Number of runs for each experiment")
