@@ -205,6 +205,7 @@ def main(args: argparse.Namespace):
     board_size = [10, 50, 100, 500, 1000]
     # board_size = [10, 50, 100]
     # board_size = [1000, 5000]
+    board_size = [1000]
 
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -238,7 +239,7 @@ def main(args: argparse.Namespace):
     filepath = f"experiment_{board_size[-1]}.json"
     filepath = os.path.join(args.output_dir, filepath)
     data = {
-        board_size[-1]: get_random_boards(board_size[-1])
+        board_size[-1]: get_random_boards(board_size[-1], num_boards=args.num_boards_per_config)
     }
     write_boards_to_json(data, filepath)
 
@@ -246,7 +247,7 @@ def main(args: argparse.Namespace):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--output_dir", type=str, default="./data/experiments",
+    parser.add_argument("-o", "--output_dir", type=str, default="./data/experiments",
                         help="Output directory")
     parser.add_argument("--num_boards_per_config", type=int, default=10,
                         help="number of boards per configuration")

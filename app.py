@@ -71,6 +71,7 @@ def run_experiments(config_file: str, agent: str, output_dir: str, seed: int, ru
     os.makedirs(output_dir, exist_ok=True)
     with open(result_file, "w") as f:
         json.dump(results, f, indent=2)
+    print(f"Results saved in: {result_file}")
 
 
 def run_game(board_config: BoardConfig, agent: str, seed: int = 0) -> Tuple[int, str]:
