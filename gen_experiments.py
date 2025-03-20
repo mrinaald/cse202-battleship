@@ -14,6 +14,7 @@ from tqdm import tqdm, trange
 from data_types import BoardConfig, Ship
 
 
+LARGE_SHIPS = False
 DEBUG = False
 RNG = np.random.default_rng(seed=13)
 
@@ -59,10 +60,14 @@ def generate_boards(n: int, ship_area_percentage: float, min_ship_size: Tuple[in
     boards: List[BoardConfig] = []
     board_area = float(n*n)
 
-    max_ship_lsize = max(min_ship_size[0], int(n*0.2)) if min_ship_size[0] <= min_ship_size[1] else int(n*0.7)
-    max_ship_bsize = max(min_ship_size[1], int(n*0.2)) if min_ship_size[1] < min_ship_size[0] else int(n*0.7)
-    # max_ship_lsize = int(n*0.7)
-    # max_ship_bsize = int(n*0.7)
+    if LARGE_SHIPS:
+        max_ship_lsize = int(n*0.3)
+        max_ship_bsize = int(n*0.3)
+    else:
+        max_ship_lsize = max(min_ship_size[0], int(n*0.2)) if min_ship_size[0] <= min_ship_size[1] else int(n*0.7)
+        max_ship_bsize = max(min_ship_size[1], int(n*0.2)) if min_ship_size[1] < min_ship_size[0] else int(n*0.7)
+        # max_ship_lsize = int(n*0.7)
+        # max_ship_bsize = int(n*0.7)
     # print(n, max_ship_lsize, max_ship_bsize)
 
     l_range = list(range(min_ship_size[0], max_ship_lsize+1))
@@ -100,6 +105,7 @@ def generate_boards(n: int, ship_area_percentage: float, min_ship_size: Tuple[in
             positions=positions,
         ))
 
+        infty_loop_counter = 0
         while (ship_area / board_area) < ship_area_percentage:
             count = 1 if RNG.random() < 0.5 else 2
 
@@ -109,6 +115,12 @@ def generate_boards(n: int, ship_area_percentage: float, min_ship_size: Tuple[in
             b = int(RNG.choice(b_range, p=b_probs))
             ship_size = (l, b)
             if ship_size == min_ship_size and (len(l_range) > 1 or len(b_range) > 1):
+                infty_loop_counter += 1
+                if infty_loop_counter >= 500:
+                    print("", flush=True)
+                    print(n, ship_size, min_ship_size, l_range, b_range, flush=True)
+                    exit(0)
+
                 # Gets stuck in infinity loop if following unused statement is removed
                 # Maybe some issue with random generator that randomly keeps generating same number.
                 _ = int(RNG.choice(l_range, p=l_probs))
@@ -122,6 +134,7 @@ def generate_boards(n: int, ship_area_percentage: float, min_ship_size: Tuple[in
             positions = place_ship_on_board(game_board, ship_size, count=count)
             if len(positions) == 0:
                 continue
+            infty_loop_counter = 0
             count = len(positions)
 
             ship_area += (count * ship_size[0] * ship_size[1])
@@ -148,13 +161,29 @@ def generate_boards(n: int, ship_area_percentage: float, min_ship_size: Tuple[in
 def get_random_boards(n: int, num_boards: int=1) -> Dict[str, List[BoardConfig]]:
     data: Dict[str, List[BoardConfig]] = {}
 
-    side1 = int(RNG.integers(2, 5, endpoint=True))
-    side2 = int(RNG.integers(2, 5, endpoint=True))
-    rl = min(side1, side2)
-    rb = max(side1, side2)
+    if LARGE_SHIPS:
+        side1 = max(int(RNG.integers(int(n*0.05), int(n*0.1), endpoint=True)), 2)
+        side2 = max(int(RNG.integers(int(n*0.05), int(n*0.1), endpoint=True)), 2)
+        rl = min(side1, side2)
+        rb = max(side1, side2)
+
+        ship_sizes = [(rl, rb)]
+
+        side1 = int(RNG.integers(int(n*0.1), int(n*0.2), endpoint=True))
+        side2 = int(RNG.integers(int(n*0.1), int(n*0.2), endpoint=True))
+        rl = min(side1, side2)
+        rb = max(side1, side2)
+        ship_sizes.append((rl, rb))
+    else:
+        side1 = int(RNG.integers(2, 5, endpoint=True))
+        side2 = int(RNG.integers(2, 5, endpoint=True))
+        rl = min(side1, side2)
+        rb = max(side1, side2)
+        ship_sizes = [(1,2), (2,3), (rl, rb)]
+
 
     for perc in tqdm([0.20, 0.40], leave=False):
-        for min_ship_size in tqdm([(1,2), (2,3), (rl, rb)], leave=False):
+        for min_ship_size in tqdm(ship_sizes, leave=False):
             boards = generate_boards(n, perc, min_ship_size, num_boards)
             key = f"p{perc:.2f}-s{min_ship_size[0]}x{min_ship_size[1]}"
             data[key] = boards
@@ -168,7 +197,12 @@ def main(args: argparse.Namespace):
         global DEBUG
         DEBUG = True
 
-    board_size = [10, 50, 100, 500, 1000, 5000]
+    if args.large_ships:
+        global LARGE_SHIPS
+        LARGE_SHIPS = True
+
+    # board_size = [10, 50, 100, 500, 1000, 5000]
+    board_size = [10, 50, 100, 500, 1000]
     # board_size = [10, 50, 100]
     # board_size = [1000, 5000]
 
@@ -216,6 +250,9 @@ if __name__ == "__main__":
                         help="Output directory")
     parser.add_argument("--num_boards_per_config", type=int, default=10,
                         help="number of boards per configuration")
+
+    parser.add_argument("-l", "--large_ships", action="store_true",
+                        help="To generate samples with large ships")
 
     parser.add_argument("-d", "--debug", action="store_true",
                         help="flag to run in debug mode")
