@@ -15,15 +15,24 @@ def run_experiments(config: ExperimentConfig, output_dir: str):
     pass
 
 
-def run_game(board_config: BoardConfig):
+def run_game(board_config: BoardConfig, agent: str, seed: int = 0):
     game_board = BattleshipBoard(board_config)
     agent_board = BattleshipAgentBoard(board_config, game_board.get_proxy_API_for_attack())
 
-    agent = BruteForceAgent(agent_board=agent_board)
+    if agent == "bruteforce":
+        agent = BruteForceAgent(agent_board=agent_board)
+    elif agent == "optimal":
+        agent = OptimalAgent(agent_board=agent_board)
+    elif agent == "random":
+        agent = RandomAgent(agent_board=agent_board, seed=seed)
+    else:
+        raise NotImplementedError(f"Unknown agent [{agent}]")
+
     moves, err = agent.start_game()
-    print(f"Num moves taken by agent: {moves}")
     if err:
         print(f"Agent Error: {err}")
+        return
+    print(f"Num moves taken by agent: {moves}")
 
 
 def main(args: argparse.Namespace):
@@ -39,7 +48,7 @@ def main(args: argparse.Namespace):
     if args.board_file and os.path.exists(args.board_file):
         # Use the input json file to load a board
         board_config = BoardConfig.from_json(args.board_file)
-        run_game(board_config)
+        run_game(board_config, args.agent, args.seed)
         return
 
 
@@ -48,6 +57,9 @@ if __name__ == "__main__":
 
     parser.add_argument("--board_file", type=str, default="",
                         help="Input board filepath")
+    parser.add_argument("-a", "--agent", default="bruteforce",
+                        choices=["bruteforce", "optimal", "random"],
+                        help="The agent to use")
     
     # Below parameters are not implemented yet
     parser.add_argument("-c", "--config_file", type=str, default="",
