@@ -3,42 +3,79 @@
 The main app module
 """
 import argparse
+import json
 import os
+from typing import Tuple
 
-from agent import BruteForceAgent, OptimalAgent, RandomAgent
+import numpy as np
+import pandas as pd
+
+from agent import BaseAgent, BruteForceAgent, OptimalAgent, RandomAgent
 from board import BattleshipBoard, BattleshipAgentBoard
 from data_types import BoardConfig, ExperimentConfig
 
 
-def run_experiments(config: ExperimentConfig, output_dir: str):
-    """Method to run multiple experiments"""
-    pass
+def run_experiments(config_file: str, agent: str, output_dir: str, seed: int, runs: int):
+    """
+    Method to run multiple experiments
+
+    NOTE: Param {runs} is currently not used
+    """
+    with open(config_file, "r") as f:
+        experiment_config = json.load(f)
 
 
-def run_game(board_config: BoardConfig, agent: str, seed: int = 0):
+    for n, configs in experiment_config.items():
+        for config, boards in configs.items():
+            perc = float(config.split("-")[0][1:])
+            min_ship_size = config.split("-")[1][1:]
+            min_ship_size = tuple([int(s) for s in min_ship_size.split("x")])
+
+            # print(f"n={n} | p={perc} | s={min_ship_size} | num_boards={len(boards)}")
+
+            for board_config_dict in boards:
+                board_config = BoardConfig.from_dict(board_config_dict)
+
+                # We need at least N (board size) vs Moves plot for all 3 agents
+                #
+                # For every N, we have:
+                # 1. (a) Total area of ship approx. 20% of total area of board
+                #    (b) Total area of ship approx. 40% of total area of board
+                # 2. (a) Minimum size ship = 1 x 2
+                #    (b) Minimum size ship = 2 x 3
+                #    (c) Minimum size ship = Random([2,3,4,5]) x Random([2,3,4,5])
+                # In other words, a total of 6 combinations for each N.
+                # For each combination, we have 10 different boards, so we can take avg., std., median, etc.
+
+                # TODO: Uncomment below line, collect data (moves) and save in some .csv/.json
+                #       for plotting purposes. We can track moves of all 10 boards for each configuration
+                #       so that we can compute the statistics (mean, median, etc.) without re-running
+                #       the experiments.
+                # moves, err = run_game(board_config, agent, seed)
+
+
+def run_game(board_config: BoardConfig, agent: str, seed: int = 0) -> Tuple[int, str]:
     game_board = BattleshipBoard(board_config)
     agent_board = BattleshipAgentBoard(board_config, game_board.get_proxy_API_for_attack())
 
     if agent == "bruteforce":
-        agent = BruteForceAgent(agent_board=agent_board)
+        agent: BaseAgent = BruteForceAgent(agent_board=agent_board)
     elif agent == "optimal":
-        agent = OptimalAgent(agent_board=agent_board)
+        agent: BaseAgent = OptimalAgent(agent_board=agent_board)
     elif agent == "random":
-        agent = RandomAgent(agent_board=agent_board, seed=seed)
+        agent: BaseAgent = RandomAgent(agent_board=agent_board, seed=seed)
     else:
         raise NotImplementedError(f"Unknown agent [{agent}]")
 
     moves, err = agent.start_game()
-    if err:
-        print(f"Agent Error: {err}")
-        return
-    print(f"Num moves taken by agent: {moves}")
+    return moves, err
 
 
 def main(args: argparse.Namespace):
     if args.experiment_file and os.path.exists(args.experiment_file):
         # Experiment mode
         # TODO: Use run_experiments() method
+        run_experiments(args.experiment_file, args.agent, output_dir=args.output_dir, seed=args.seed, runs=args.runs)
         return
 
     if args.config_file and os.path.exists(args.config_file):
@@ -48,7 +85,11 @@ def main(args: argparse.Namespace):
     if args.board_file and os.path.exists(args.board_file):
         # Use the input json file to load a board
         board_config = BoardConfig.from_json(args.board_file)
-        run_game(board_config, args.agent, args.seed)
+        moves, error_msg = run_game(board_config, args.agent, args.seed)
+        if error_msg:
+            print(f"Agent Error: {error_msg}")
+            return
+        print(f"Num moves taken by agent: {moves}")
         return
 
 
@@ -60,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--agent", default="bruteforce",
                         choices=["bruteforce", "optimal", "random"],
                         help="The agent to use")
-    
+
     # Below parameters are not implemented yet
     parser.add_argument("-c", "--config_file", type=str, default="",
                         help="Generate a random board from an input CONFIG .json file")
@@ -70,6 +111,10 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--experiment_file", type=str, default="",
                         help="Run experiments using an input CONFIG .json file."
                         "If provided, all other parameters are ignored.")
+    parser.add_argument("-o", "--output_dir", type=str, default="./data/experiments",
+                        help="Output directory")
+    parser.add_argument("-r", "--runs", type=int, default=10,
+                        help="Number of runs for each experiment")
 
     args = parser.parse_args()
     main(args)

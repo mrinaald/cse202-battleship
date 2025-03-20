@@ -69,14 +69,14 @@ class BruteForceAgent(BaseAgent):
 
 class OptimalAgent(BaseAgent):
     """Our Optimal Algorithmic Agent"""
-    
+
     def __init__(self, agent_board: BattleshipAgentBoard):
         super().__init__(agent_board)
         self.total_ships = sum([ship.count for ship in self.board_config.ships])
         self.ships_sunk = 0
         self.moves = 0
         self.step_size = min(ship.length * ship.breadth for ship in self.board_config.ships)
-        
+
         min_small_side = np.inf
         min_large_side = np.inf
         for ship in self.board_config.ships:
@@ -84,7 +84,7 @@ class OptimalAgent(BaseAgent):
             large_side = max(ship.length, ship.breadth)
             if small_side < min_small_side or large_side < min_large_side:
                 min_small_side, min_large_side = small_side, large_side
-        
+
         self.small_side = min_small_side
         self.large_side = min_large_side
         print(f"Min sized ship: {self.large_side}x{self.small_side}")
@@ -99,13 +99,13 @@ class OptimalAgent(BaseAgent):
                         result = self.agent_board.attack(ar, ac)
                         self.moves += 1
                         self.board[ar, ac] = 1  # Mark as visited
-                        
+
                         if result == AttackResult.HIT:
                             self.sink(ar, ac)
-                        
+
                         if self.ships_sunk == self.total_ships:
                             return True
-        
+
         print(f"Could not sink all ships: sunk={self.ships_sunk}, total={self.total_ships}")
         return False
 
@@ -119,7 +119,7 @@ class OptimalAgent(BaseAgent):
                     result = self.agent_board.attack(ni, nj)
                     self.moves += 1
                     self.board[ni, nj] = 1  # Mark as visited
-                    
+
                     if result == AttackResult.HIT:
                         queue.append((ni, nj))
                     elif result == AttackResult.SUNK:
@@ -170,7 +170,7 @@ class RandomAgent(BaseAgent):
                     result = self.agent_board.attack(ni, nj)
                     self.board[ni, nj] = 1  # Mark as visited
                     self.moves += 1
-                    
+
                     if result == AttackResult.HIT:
                         queue.append((ni, nj))
                     elif result == AttackResult.SUNK:
