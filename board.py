@@ -36,12 +36,12 @@ class BattleshipBoard:
             # make sure number of ships and number of positions in the list match
             if ship.count != len(ship.positions):
                 raise ValueError("Ship count does not match with number of ships")
-            
+
             total_ship_area += ship.length * ship.breadth * ship.count
 
             l = min(ship.length, ship.breadth)
             b = max(ship.length, ship.breadth)
-            
+
             if l < min_l:
                 min_l = l
                 min_l_id = [ship_index]
@@ -60,7 +60,7 @@ class BattleshipBoard:
             if l in min_b_id:
                 is_valid = True
                 break
-        
+
         if not is_valid:
             raise ValueError(
                 "No ship type with both smallest length and smallest breath"
