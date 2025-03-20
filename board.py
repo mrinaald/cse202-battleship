@@ -66,6 +66,10 @@ class BattleshipBoard:
                 "No ship type with both smallest length and smallest breath"
             )
 
+        # make sure there is at least one ship on board
+        if total_ship_area == 0:
+            raise ValueError("No ships placed on board")
+
         # make sure area of board is larger than sum of areas of ships
         if total_ship_area > board_size:
             raise ValueError("Ships do not all fit on board")

@@ -10,11 +10,12 @@ import random
 import numpy as np
 
 from board import BattleshipAgentBoard
-from data_types import AttackResult
+from data_types import AttackResult, BoardViewConfig
 
 
 class BaseAgent(ABC):
     agent_board: BattleshipAgentBoard
+    board_config: BoardViewConfig
     board: np.array
 
     def __init__(self, agent_board: BattleshipAgentBoard):
@@ -75,15 +76,24 @@ class OptimalAgent(BaseAgent):
         self.ships_sunk = 0
         self.moves = 0
         self.step_size = min(ship.length * ship.breadth for ship in self.board_config.ships)
+        
+        min_small_side = np.inf
+        min_large_side = np.inf
+        for ship in self.board_config.ships:
+            small_side = min(ship.length, ship.breadth)
+            large_side = max(ship.length, ship.breadth)
+            if small_side < min_small_side or large_side < min_large_side:
+                min_small_side, min_large_side = small_side, large_side
+        
+        self.small_side = min_small_side
+        self.large_side = min_large_side
+        print(f"Min sized ship: {self.large_side}x{self.small_side}")
 
     def seek(self) -> bool:
         """Seeks ships using a checkerboard-style search based on the smallest ship size."""
-        large_side = max(self.step_size, self.step_size)
-        small_side = min(self.step_size, self.step_size)
-
-        for r in range(0, self.board_config.n, large_side):
-            for c in range(0, self.board_config.n, large_side):
-                for x in range(0, large_side, small_side):
+        for r in range(0, self.board_config.n, self.large_side):
+            for c in range(0, self.board_config.n, self.large_side):
+                for x in range(0, self.large_side, self.small_side):
                     ar, ac = r + x, c + x
                     if 0 <= ar < self.board_config.n and 0 <= ac < self.board_config.n and self.board[ar, ac] == 0:
                         result = self.agent_board.attack(ar, ac)
@@ -95,6 +105,8 @@ class OptimalAgent(BaseAgent):
                         
                         if self.ships_sunk == self.total_ships:
                             return True
+        
+        print(f"Could not sink all ships: sunk={self.ships_sunk}, total={self.total_ships}")
         return False
 
     def sink(self, ar: int, ac: int):
