@@ -175,11 +175,13 @@ def get_random_boards(n: int, num_boards: int=1) -> Dict[str, List[BoardConfig]]
         rb = max(side1, side2)
         ship_sizes.append((rl, rb))
     else:
-        side1 = int(RNG.integers(2, 5, endpoint=True))
-        side2 = int(RNG.integers(2, 5, endpoint=True))
-        rl = min(side1, side2)
-        rb = max(side1, side2)
-        ship_sizes = [(1,2), (2,3), (rl, rb)]
+        # side1 = int(RNG.integers(2, 5, endpoint=True))
+        # side2 = int(RNG.integers(2, 5, endpoint=True))
+        # rl = min(side1, side2)
+        # rb = max(side1, side2)
+        ship_sizes = [(1,2), (2,3)]
+        if n >= 30:
+            ship_sizes.append((3,5))
 
 
     for perc in tqdm([0.20, 0.40], leave=False):
@@ -192,7 +194,46 @@ def get_random_boards(n: int, num_boards: int=1) -> Dict[str, List[BoardConfig]]
 
     return data
 
+
+def generate_standard_board(output_dir: str):
+    board_size = 10
+    ship_sizes = [((1,2), 1), ((1,3), 2), ((1,4), 1), ((1,5), 1)]
+
+    boards: List[BoardConfig] = []
+
+    for i in tqdm(range(100000)):
+        game_board = np.zeros((board_size, board_size))
+        ships: List[Ship] = []
+        for s, count in ship_sizes:
+            if i % 2 == 1:
+                s = (s[1], s[0])
+            positions = place_ship_on_board(game_board, s, count=count)
+            ships.append(Ship(
+                length=s[0],
+                breadth=s[1],
+                count=count,
+                positions=positions,
+            ))
+        boards.append(BoardConfig(n=board_size, ships=ships))
+
+    results = {
+        10: {
+            "p0.17-s1x2": boards
+        }
+    }
+
+    filepath = f"standard_{board_size}.json"
+    filepath = os.path.join(output_dir, filepath)
+    os.makedirs(output_dir, exist_ok=True)
+    write_boards_to_json(results, filepath)
+
+
+
 def main(args: argparse.Namespace):
+    if args.standard:
+        generate_standard_board(args.output_dir)
+        return
+
     if args.debug:
         global DEBUG
         DEBUG = True
@@ -202,10 +243,9 @@ def main(args: argparse.Namespace):
         LARGE_SHIPS = True
 
     # board_size = [10, 50, 100, 500, 1000, 5000]
-    board_size = [10, 50, 100, 500, 1000]
+    board_size = [50, 100, 500, 1000]
     # board_size = [10, 50, 100]
     # board_size = [1000, 5000]
-    board_size = [1000]
 
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -257,6 +297,9 @@ if __name__ == "__main__":
 
     parser.add_argument("-d", "--debug", action="store_true",
                         help="flag to run in debug mode")
+
+    parser.add_argument("-s", "--standard", action="store_true",
+                        help="Generate only the sample board variations")
 
     args = parser.parse_args()
     main(args)

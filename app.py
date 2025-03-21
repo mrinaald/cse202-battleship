@@ -5,7 +5,7 @@ The main app module
 import argparse
 import json
 import os
-from typing import Tuple
+from typing import Dict, Tuple
 
 import numpy as np
 import pandas as pd
@@ -23,7 +23,7 @@ def run_experiments(config_file: str, agent: str, output_dir: str, seed: int, ru
     NOTE: Param {runs} is currently not used
     """
     with open(config_file, "r") as f:
-        experiment_config = json.load(f)
+        experiment_config: Dict = json.load(f)
 
     basename = os.path.basename(config_file)
     result_file = os.path.join(output_dir, f"{agent}_{basename.split('_')[-1]}")
@@ -32,7 +32,18 @@ def run_experiments(config_file: str, agent: str, output_dir: str, seed: int, ru
     # results = {n: {config: {moves: [], error: [(index, message)]}}}
     results = {}
 
+
     for n, configs in tqdm(experiment_config.items(), total=len(experiment_config), desc="N"):
+
+    # rng = np.random.default_rng(seed=seed)
+    # all_n = list(experiment_config.keys())
+    # all_n.sort()
+    # random_n = [all_n[0]] + rng.choice(all_n[1:], size=9, replace=False).tolist()
+    # random_n.sort()
+    # for n in tqdm(random_n, desc="N"):
+    #     configs = experiment_config[n]
+
+
         results[n] = {}
         for config, boards in tqdm(configs.items(), total=len(configs), desc="Configs", leave=False):
             perc = float(config.split("-")[0][1:])
@@ -132,6 +143,7 @@ if __name__ == "__main__":
                         help="Run experiments using an input CONFIG .json file."
                         "If provided, all other parameters are ignored.")
     parser.add_argument("-o", "--output_dir", type=str, default="./data/outputs",
+    # parser.add_argument("-o", "--output_dir", type=str, default="./data/outputs-large-ships",
                         help="Output directory")
     parser.add_argument("-r", "--runs", type=int, default=10,
                         help="Number of runs for each experiment")
